@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>CotiZap | Cotizaciones profesionales para técnicos y negocios LATAM</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: rgba(255,255,255,0.08);
+      --panel-solid: #ffffff;
+      --text: #eef4ff;
+      --muted: #b7c4d9;
+      --line: rgba(255,255,255,0.14);
+      --primary: #1a56db;
+      --primary-dark: #0e3a8c;
+      --accent: #25d366;
+      --shadow: 0 20px 60px rgba(0,0,0,0.28);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(26,86,219,0.35), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(37,211,102,0.18), transparent 25%),
+        linear-gradient(135deg, #08101d, #101b30 45%, #0a1528);
+      color: var(--text);
+    }
+
+    .container { width: min(1140px, calc(100% - 32px)); margin: 0 auto; }
+    .nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 22px 0;
+    }
+    .brand { font-size: 1.2rem; font-weight: 800; }
+    .brand span { color: #7fb1ff; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      border: none; border-radius: 14px; padding: 14px 18px;
+      font-weight: 800; cursor: pointer; text-decoration: none;
+      transition: transform .18s ease, opacity .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: .96; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid var(--line); }
+    .btn-whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); color: #fff; }
+
+    .hero {
+      display: grid; grid-template-columns: 1.15fr .85fr; gap: 28px;
+      align-items: center; padding: 24px 0 44px;
+    }
+    .badge {
+      display: inline-flex; gap: 8px; align-items: center;
+      background: rgba(255,255,255,0.08); border: 1px solid var(--line);
+      padding: 10px 14px; border-radius: 999px; color: #d9e7fb; font-size: .88rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 4.4rem);
+      line-height: .96; margin: 16px 0 18px;
+    }
+    .hero p { color: var(--muted); font-size: 1.06rem; line-height: 1.65; margin: 0 0 22px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .mockup {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(12px);
+    }
+    .mockup-inner {
+      background: #fff;
+      color: #10213a;
+      border-radius: 20px;
+      padding: 18px;
+    }
+    .mockup-top { display: flex; justify-content: space-between; margin-bottom: 18px; }
+    .mockup-chip {
+      padding: 6px 10px; border-radius: 999px; background: #eff4fd; color: #1949a7; font-size: .76rem; font-weight: 800;
+    }
+    .mockup-card { background: #f8fbff; border: 1px solid #e4edf8; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+    .mockup-row { display: flex; justify-content: space-between; gap: 10px; color: #43556f; font-size: .92rem; padding: 8px 0; border-bottom: 1px solid #ebf1f8; }
+    .mockup-row:last-child { border-bottom: none; }
+
+    .section { padding: 34px 0; }
+    .section h2 { font-size: 2rem; margin: 0 0 12px; }
+    .section p.lead { color: var(--muted); margin: 0 0 24px; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--line);
+      border-radius: 20px; padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+    .card h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    .card p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+    .pricing {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    }
+    .price-card {
+      background: #fff; color: #10213a; border-radius: 22px; padding: 24px; box-shadow: var(--shadow);
+    }
+    .price-card.featured { outline: 3px solid #2d6cff; transform: translateY(-8px); }
+    .price-card h3 { margin: 0 0 6px; }
+    .price { font-size: 2rem; font-weight: 900; margin: 8px 0 14px; }
+    .price-card ul { margin: 0; padding-left: 18px; color: #526580; line-height: 1.8; }
+
+    .cta {
+      margin: 34px 0 60px;
+      background: linear-gradient(135deg, rgba(26,86,219,0.18), rgba(37,211,102,0.12));
+      border: 1px solid var(--line);
+      border-radius: 24px; padding: 28px;
+      display: flex; justify-content: space-between; gap: 18px; align-items: center;
+    }
+    .cta h2 { margin: 0 0 8px; }
+    .cta p { margin: 0; color: var(--muted); }
+
+    footer { color: #8fa3c2; padding: 0 0 36px; font-size: .92rem; }
+
+    @media (max-width: 920px) {
+      .hero, .grid-3, .pricing, .cta { grid-template-columns: 1fr; display: grid; }
+      .cta { align-items: start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div class="brand">⚡ <span>CotiZap</span></div>
+      <a class="btn btn-secondary" href="./index.html">Ver demo</a>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="badge">📄 Cotizaciones y facturas para técnicos, plomeros y negocios LATAM</div>
+        <h1>Cierra más trabajos con cotizaciones profesionales en minutos.</h1>
+        <p>CotiZap ayuda a negocios de servicios a crear cotizaciones bonitas, enviarlas por WhatsApp, convertirlas en factura y guardar su historial sin perder tiempo en Word o Excel.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="./index.html">Probar demo</a>
+          <a class="btn btn-whatsapp" href="https://wa.me/0000000000?text=Hola,%20quiero%20informaci%C3%B3n%20sobre%20CotiZap" target="_blank" rel="noreferrer">Pedir por WhatsApp</a>
+        </div>
+      </div>
+
+      <div class="mockup">
+        <div class="mockup-inner">
+          <div class="mockup-top">
+            <div>
+              <strong>CotiZap</strong>
+              <div style="color:#718096;font-size:.9rem; margin-top:4px;">Tu cotización lista para enviar</div>
+            </div>
+            <div class="mockup-chip">MXN</div>
+          </div>
+          <div class="mockup-card">
+            <div class="mockup-row"><span>Diagnóstico técnico</span><strong>$700.00</strong></div>
+            <div class="mockup-row"><span>Materiales</span><strong>$520.00</strong></div>
+            <div class="mockup-row"><span>Mano de obra</span><strong>$1,350.00</strong></div>
+          </div>
+          <div class="mockup-card">
+            <div class="mockup-row"><span>Descuento</span><strong>$128.50</strong></div>
+            <div class="mockup-row"><span>IVA</span><strong>$391.44</strong></div>
+            <div class="mockup-row"><span>Total</span><strong>$2,832.94</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Hecho para venderse fácil</h2>
+      <p class="lead">No es solo una herramienta, es un producto claro para negocios que cotizan todos los días.</p>
+      <div class="grid-3">
+        <div class="card">
+          <h3>⚡ En 2 minutos</h3>
+          <p>Crea una cotización profesional sin usar Word ni diseñar nada a mano.</p>
+        </div>
+        <div class="card">
+          <h3>💬 WhatsApp listo</h3>
+          <p>Abre el mensaje con el resumen de la cotización para enviarlo al cliente rápido.</p>
+        </div>
+        <div class="card">
+          <h3>🧾 De cotización a factura</h3>
+          <p>Convierte el documento con un clic y mantén el proceso ordenado.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Plantillas por industria</h2>
+      <p class="lead">Personalizado para negocios reales de LATAM.</p>
+      <div class="grid-3">
+        <div class="card"><h3>🔧 Plomería</h3><p>Fugas, instalaciones, mantenimiento, materiales y mano de obra.</p></div>
+        <div class="card"><h3>💡 Electricidad</h3><p>Diagnóstico, tableros, cableado, breakers, reparaciones y visitas técnicas.</p></div>
+        <div class="card"><h3>🏗️ Construcción</h3><p>Obra, materiales, mano de obra, estimaciones y control básico comercial.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Qué incluye</h2>
+      <div class="grid-3">
+        <div class="card"><h3>PDF premium</h3><p>Logo, QR, términos, firma, validez y estilo profesional para enviar.</p></div>
+        <div class="card"><h3>Historial guardado</h3><p>No pierdes cotizaciones anteriores. Puedes recargar y reutilizar.</p></div>
+        <div class="card"><h3>Monedas y descuentos</h3><p>MXN, USD, COP, ARS, descuentos por ítem y descuentos globales.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Planes sugeridos para venderlo</h2>
+      <p class="lead">Una forma simple de ofrecerlo según el tipo de cliente.</p>
+      <div class="pricing">
+        <div class="price-card">
+          <h3>Básico</h3>
+          <div class="price">$19</div>
+          <ul>
+            <li>1 plantilla</li>
+            <li>PDF premium</li>
+            <li>WhatsApp</li>
+            <li>Uso local</li>
+          </ul>
+        </div>
+        <div class="price-card featured">
+          <h3>Pro</h3>
+          <div class="price">$39</div>
+          <ul>
+            <li>Todas las plantillas</li>
+            <li>Historial</li>
+            <li>Factura con un clic</li>
+            <li>Colores personalizados</li>
+          </ul>
+        </div>
+        <div class="price-card">
+          <h3>Personalizado</h3>
+          <div class="price">Desde $79</div>
+          <ul>
+            <li>Branding a medida</li>
+            <li>Logo del negocio</li>
+            <li>Ajustes extra</li>
+            <li>Entrega lista para vender</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div>
+        <h2>¿Listo para enseñarlo a clientes reales?</h2>
+        <p>Ya tienes una demo funcional y una landing comercial. El siguiente paso es empezar a ofrecerlo.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="./index.html">Abrir demo</a>
+        <a class="btn btn-secondary" href="#">Quiero personalizarlo</a>
+      </div>
+    </section>
+
+    <footer>
+      CotiZap, cotizaciones profesionales para negocios de servicios en LATAM.
+    </footer>
+  </div>
+</body>
+</html>

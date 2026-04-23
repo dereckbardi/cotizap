@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>CotiZap — Generador de Cotizaciones</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f0f4f8; color: #1a202c; }
+
+    header {
+      background: linear-gradient(135deg, #1a56db, #0e3a8c);
+      color: white; padding: 20px 40px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    header h1 { font-size: 1.8rem; }
+    header span { font-size: 0.9rem; opacity: 0.8; }
+
+    .container { max-width: 900px; margin: 32px auto; padding: 0 20px; }
+
+    .card {
+      background: white; border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 28px; margin-bottom: 24px;
+    }
+    .card h2 {
+      font-size: 1rem; font-weight: 700; color: #1a56db;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 20px; padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    label { display: block; font-size: 0.82rem; font-weight: 600; color: #4a5568; margin-bottom: 4px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0;
+      border-radius: 8px; font-size: 0.95rem; transition: border 0.2s;
+    }
+    input:focus, select:focus { outline: none; border-color: #1a56db; }
+
+    /* Tabla de servicios */
+    .services-header {
+      display: grid;
+      grid-template-columns: 2fr 80px 110px 90px 110px 44px;
+      gap: 8px; font-size: 0.78rem; font-weight: 700;
+      color: #718096; text-transform: uppercase;
+      padding: 0 0 8px; margin-bottom: 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .service-row {
+      display: grid;
+      grid-template-columns: 2fr 80px 110px 90px 110px 44px;
+      gap: 8px; margin-bottom: 10px; align-items: center;
+    }
+    .service-row input { padding: 8px 10px; }
+    .total-field {
+      background: #f7fafc; border-color: #e2e8f0 !important;
+      font-weight: 700; color: #2d3748; cursor: default;
+    }
+
+    .btn-add {
+      background: none; border: 2px dashed #cbd5e0;
+      color: #718096; padding: 10px; border-radius: 8px;
+      cursor: pointer; width: 100%; font-size: 0.9rem;
+      margin-top: 8px; transition: all 0.2s;
+    }
+    .btn-add:hover { border-color: #1a56db; color: #1a56db; }
+
+    .btn-del {
+      background: #fed7d7; border: none; color: #c53030;
+      border-radius: 6px; cursor: pointer; padding: 8px;
+      font-size: 1rem; font-weight: 700; transition: background 0.2s;
+    }
+    .btn-del:hover { background: #fc8181; color: white; }
+
+    /* Totales */
+    .totals { margin-top: 16px; }
+    .total-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0; font-size: 0.95rem; color: #4a5568;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .total-row.grand {
+      font-size: 1.2rem; font-weight: 800; color: #1a202c;
+      border-bottom: none; margin-top: 8px;
+    }
+    .total-row span:last-child { font-weight: 600; }
+
+    /* IVA */
+    .iva-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .iva-row label { margin: 0; white-space: nowrap; }
+    .iva-row input { width: 80px; }
+
+    .discount-inline {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Botones de acción */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .btn-generate {
+      width: 100%; padding: 16px; font-size: 1.05rem; font-weight: 700;
+      background: linear-gradient(135deg, #1a56db, #0e3a8c);
+      color: white; border: none; border-radius: 10px;
+      cursor: pointer; transition: opacity 0.2s; letter-spacing: 0.03em;
+    }
+    .btn-generate:hover { opacity: 0.9; }
+    .btn-whatsapp {
+      width: 100%; padding: 16px; font-size: 1.05rem; font-weight: 700;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      color: white; border: none; border-radius: 10px;
+      cursor: pointer; transition: opacity 0.2s; letter-spacing: 0.03em;
+    }
+    .btn-whatsapp:hover { opacity: 0.92; }
+
+    /* Logo */
+    .logo-preview {
+      width: 80px; height: 80px; object-fit: contain;
+      border: 2px dashed #e2e8f0; border-radius: 8px;
+      display: none; margin-top: 8px;
+    }
+
+    .alert {
+      display: none;
+      margin: 0 auto 18px;
+      max-width: 900px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+    .alert.error { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+    .alert.success { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+
+    .input-error {
+      border-color: #e53e3e !important;
+      box-shadow: 0 0 0 1px rgba(229,62,62,0.08);
+    }
+
+    .preview-box {
+      background: linear-gradient(135deg, #f8fbff, #ffffff);
+      border: 1px solid #dbe7f5;
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .preview-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 14px;
+    }
+    .preview-brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .preview-logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px dashed #cbd5e0;
+      background: white;
+      display: none;
+    }
+    .preview-business-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #1a202c;
+    }
+    .preview-muted {
+      color: #718096;
+      font-size: 0.88rem;
+      margin-top: 3px;
+    }
+    .preview-meta {
+      text-align: right;
+      color: #718096;
+      font-size: 0.86rem;
+    }
+    .status-chip {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      background: color-mix(in srgb, var(--primary) 12%, white);
+      color: var(--primary-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .preview-client {
+      background: #f7fafc;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .preview-client strong {
+      display: block;
+      color: #1a202c;
+      margin-bottom: 4px;
+    }
+    .preview-items {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .preview-item {
+      display: grid;
+      grid-template-columns: 1.7fr 0.6fr 0.8fr 0.8fr;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    .preview-item.header {
+      background: transparent;
+      border: none;
+      padding: 0 2px 4px;
+      color: #718096;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .preview-item span:last-child,
+    .preview-item span:nth-child(2),
+    .preview-item span:nth-child(3) {
+      text-align: right;
+    }
+    .preview-empty {
+      background: #edf2f7;
+      color: #718096;
+      text-align: center;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+
+    :root {
+      --bg: #f0f4f8;
+      --panel: #ffffff;
+      --text: #1a202c;
+      --muted: #718096;
+      --primary: #1a56db;
+      --primary-dark: #0e3a8c;
+      --border: #e2e8f0;
+      --soft: #f7fafc;
+      --danger-soft: #fed7d7;
+      --danger-text: #c53030;
+      --toolbar-bg: rgba(255,255,255,0.92);
+    }
+
+    body[data-industry="electrico"] {
+      --primary: #1a56db;
+      --primary-dark: #0e3a8c;
+    }
+
+    body[data-industry="plomeria"] {
+      --primary: #ea6a12;
+      --primary-dark: #c05621;
+    }
+
+    body[data-industry="construccion"] {
+      --primary: #d69e2e;
+      --primary-dark: #975a16;
+    }
+
+    body.dark {
+      --bg: #0f172a;
+      --panel: #111827;
+      --text: #e5edf8;
+      --muted: #94a3b8;
+      --border: #243042;
+      --soft: #172131;
+      --danger-soft: #3b1d23;
+      --danger-text: #fca5a5;
+      --toolbar-bg: rgba(17,24,39,0.92);
+    }
+
+    body, header, .card, input, textarea, select, .preview-box, .btn-add, .btn-generate, .btn-whatsapp, .btn-del, .service-row {
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    }
+
+    .card {
+      background: var(--panel);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      color: var(--primary);
+      border-bottom-color: var(--border);
+    }
+
+    label, .total-row, .preview-meta, .preview-muted, .services-header {
+      color: var(--muted);
+    }
+
+    input, select, textarea {
+      background: var(--panel);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
+    }
+
+    .services-header, .total-row, .preview-top {
+      border-color: var(--border);
+    }
+
+    .total-field, .preview-client, .preview-empty {
+      background: var(--soft);
+      color: var(--text);
+    }
+
+    .btn-add {
+      color: var(--muted);
+      border-color: var(--border);
+      background: transparent;
+    }
+
+    .btn-add:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: color-mix(in srgb, var(--primary) 8%, transparent);
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    }
+
+    .btn-del {
+      background: var(--danger-soft);
+      color: var(--danger-text);
+    }
+
+    .preview-box, .preview-item {
+      background: color-mix(in srgb, var(--panel) 92%, var(--soft));
+      border-color: var(--border);
+    }
+
+    .preview-business-name, .total-row.grand, .preview-client strong {
+      color: var(--text);
+    }
+
+    .toolbar {
+      background: var(--toolbar-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 18px;
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      justify-content: space-between;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+      backdrop-filter: blur(8px);
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-field {
+      min-width: 180px;
+    }
+
+    .btn-toolbar {
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    .btn-toolbar.secondary {
+      background: var(--soft);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .service-row.added {
+      animation: popIn 0.25s ease;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-empty {
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--soft);
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--panel) 92%, var(--soft));
+    }
+
+    .history-item strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 3px;
+      font-size: 0.92rem;
+    }
+
+    .history-item span {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .btn-small {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--soft);
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media(max-width: 600px) {
+      .grid-2, .grid-3, .action-buttons { grid-template-columns: 1fr; }
+      .services-header { display: none; }
+      .service-row { grid-template-columns: 1fr 1fr; }
+      .service-row input:first-child { grid-column: 1 / -1; }
+      .discount-inline { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      header, .toolbar, .action-buttons, #formAlert, #historyList, .btn-add, .btn-del { display: none !important; }
+      body { background: #fff; }
+      .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚡ CotiZap</h1>
+    <span>Generador de cotizaciones profesionales</span>
+  </div>
+</header>
+
+<div id="formAlert" class="alert error"></div>
+
+<div class="container">
+
+  <div class="toolbar">
+    <div class="toolbar-group">
+      <div class="toolbar-field">
+        <label>Industria</label>
+        <select id="industrySelect" onchange="setIndustryTheme(this.value)">
+          <option value="electrico">Eléctrico</option>
+          <option value="plomeria">Plomería</option>
+          <option value="construccion">Construcción</option>
+        </select>
+      </div>
+      <button class="btn-toolbar" onclick="applyDemoPreset()">✨ Cargar demo comercial</button>
+    </div>
+    <button class="btn-toolbar secondary" id="themeToggle" onclick="toggleDarkMode()">🌙 Modo oscuro</button>
+  </div>
+
+  <!-- Datos del negocio -->
+  <div class="card">
+    <h2>📋 Tu Negocio</h2>
+    <div class="grid-2">
+      <div>
+        <label>Nombre del negocio *</label>
+        <input type="text" id="bizName" placeholder="Ej: Técnico Eléctrico Ramírez"/>
+      </div>
+      <div>
+        <label>Teléfono / WhatsApp</label>
+        <input type="text" id="bizPhone" placeholder="+52 55 1234 5678"/>
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" id="bizEmail" placeholder="correo@negocio.com"/>
+      </div>
+      <div>
+        <label>Dirección</label>
+        <input type="text" id="bizAddress" placeholder="Ciudad, Estado"/>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <label>Logo del negocio</label>
+      <input type="file" id="logoInput" accept="image/*" onchange="previewLogo(event)"/>
+      <img id="logoPreview" class="logo-preview"/>
+    </div>
+  </div>
+
+  <!-- Datos del cliente -->
+  <div class="card">
+    <h2>👤 Cliente</h2>
+    <div class="grid-2">
+      <div>
+        <label>Nombre del cliente *</label>
+        <input type="text" id="clientName" placeholder="Nombre completo"/>
+      </div>
+      <div>
+        <label>Empresa / Negocio</label>
+        <input type="text" id="clientCompany" placeholder="Opcional"/>
+      </div>
+      <div>
+        <label>Teléfono</label>
+        <input type="text" id="clientPhone" placeholder="+52 55 9876 5432"/>
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="email" id="clientEmail" placeholder="cliente@email.com"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Datos de cotización -->
+  <div class="card">
+    <h2>📄 Datos de la cotización</h2>
+    <div class="grid-3">
+      <div>
+        <label>Número de cotización</label>
+        <input type="text" id="quoteNumber" placeholder="Ej: COT-2026-001"/>
+      </div>
+      <div>
+        <label>Fecha de emisión</label>
+        <input type="date" id="quoteDate"/>
+      </div>
+      <div>
+        <label>Fecha de vencimiento</label>
+        <input type="date" id="expiryDate"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>💼 Opciones comerciales</h2>
+    <div class="grid-3">
+      <div>
+        <label>Tipo de documento</label>
+        <select id="documentType">
+          <option value="cotizacion">Cotización</option>
+          <option value="factura">Factura</option>
+        </select>
+      </div>
+      <div>
+        <label>Estado</label>
+        <select id="documentStatus">
+          <option value="borrador">Borrador</option>
+          <option value="enviada">Enviada</option>
+          <option value="aprobada">Aprobada</option>
+          <option value="facturada">Facturada</option>
+        </select>
+      </div>
+      <div>
+        <label>Moneda</label>
+        <select id="currency">
+          <option value="MXN">MXN</option>
+          <option value="USD">USD</option>
+          <option value="COP">COP</option>
+          <option value="ARS">ARS</option>
+        </select>
+      </div>
+      <div>
+        <label>Descuento total</label>
+        <div class="discount-inline">
+          <select id="discountType">
+            <option value="percent">%</option>
+            <option value="amount">Importe</option>
+          </select>
+          <input type="number" id="globalDiscount" min="0" step="0.01" placeholder="0"/>
+        </div>
+      </div>
+      <div>
+        <label>Color principal</label>
+        <input type="color" id="brandColor" value="#1a56db"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Servicios -->
+  <div class="card">
+    <h2>🔧 Servicios / Productos</h2>
+    <div class="services-header">
+      <span>Descripción</span>
+      <span>Cantidad</span>
+      <span>Precio Unit.</span>
+      <span>Desc.%</span>
+      <span>Total</span>
+      <span></span>
+    </div>
+    <div id="servicesContainer"></div>
+    <button class="btn-add" onclick="addService()">+ Agregar servicio</button>
+
+    <div class="totals">
+      <div class="total-row"><span>Subtotal</span><span id="subtotal">$0.00</span></div>
+      <div class="total-row"><span id="discountLabel">Descuento</span><span id="discountAmount">$0.00</span></div>
+      <div class="iva-row">
+        <label>IVA (%)</label>
+        <input type="number" id="ivaRate" value="16" min="0" max="100" onchange="calcTotals()"/>
+        <span id="ivaAmount" style="font-weight:600; color:#4a5568;">$0.00</span>
+      </div>
+      <div class="total-row grand"><span>TOTAL</span><span id="grandTotal">$0.00</span></div>
+    </div>
+  </div>
+
+  <!-- Notas -->
+  <div class="card">
+    <h2>📝 Notas adicionales</h2>
+    <textarea id="notes" rows="3" placeholder="Condiciones de pago, tiempo de entrega, garantía..." style="width:100%; padding:10px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:0.95rem;"></textarea>
+  </div>
+
+  <!-- Vista previa -->
+  <div class="card">
+    <h2>👁️ Vista previa</h2>
+    <div class="preview-box">
+      <div class="preview-top">
+        <div class="preview-brand">
+          <img id="previewLogoImg" class="preview-logo" alt="Logo preview" />
+          <div>
+            <div class="preview-business-name" id="previewBizName">Tu negocio</div>
+            <div class="preview-muted" id="previewBizContact">WhatsApp o teléfono</div>
+          </div>
+        </div>
+        <div class="preview-meta">
+          <div class="status-chip" id="previewStatus">Borrador</div>
+          <div id="previewFolio">Folio demo</div>
+          <div id="previewDate">Fecha actual</div>
+          <div id="previewExpiry">Válida hasta</div>
+        </div>
+      </div>
+
+      <div class="preview-client">
+        <strong id="previewClientName">Cliente</strong>
+        <div class="preview-muted" id="previewClientMeta">Empresa y contacto</div>
+      </div>
+
+      <div class="preview-items" id="previewItems"></div>
+
+      <div class="totals">
+        <div class="total-row"><span>Subtotal</span><span id="previewSubtotal">$0.00</span></div>
+        <div class="total-row"><span id="previewDiscountLabel">Descuento</span><span id="previewDiscountAmount">$0.00</span></div>
+        <div class="total-row"><span id="previewIvaLabel">IVA (16%)</span><span id="previewIvaAmount">$0.00</span></div>
+        <div class="total-row grand"><span>Total</span><span id="previewGrandTotal">$0.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🗂️ Historial de cotizaciones</h2>
+    <div id="historyList" class="history-list"></div>
+  </div>
+
+  <div class="action-buttons">
+    <button class="btn-whatsapp" onclick="openWhatsAppQuote()">💬 Enviar por WhatsApp</button>
+    <button class="btn-generate" onclick="generatePDF()">⬇️ Descargar Cotización PDF</button>
+    <button class="btn-toolbar secondary" onclick="convertToInvoice()">🧾 Convertir a Factura</button>
+    <button class="btn-toolbar secondary" onclick="printCurrentQuote()">🖨️ Imprimir</button>
+  </div>
+  <div style="height:40px"></div>
+</div>
+
+<div id="qrTemp" style="position:absolute; left:-9999px; top:-9999px;"></div>
+
+<script>
+  const STORAGE_KEY = 'cotizap_draft_v1';
+  let logoDataUrl = null;
+  let logoMime = null;
+  let serviceCount = 0;
+
+  const alertBox = document.getElementById('formAlert');
+  const previewLogoImg = document.getElementById('previewLogoImg');
+  const previewBizName = document.getElementById('previewBizName');
+  const previewBizContact = document.getElementById('previewBizContact');
+  const previewStatus = document.getElementById('previewStatus');
+  const previewFolio = document.getElementById('previewFolio');
+  const previewDate = document.getElementById('previewDate');
+  const previewExpiry = document.getElementById('previewExpiry');
+  const previewClientName = document.getElementById('previewClientName');
+  const previewClientMeta = document.getElementById('previewClientMeta');
+  const previewItems = document.getElementById('previewItems');
+  const previewSubtotal = document.getElementById('previewSubtotal');
+  const previewDiscountLabel = document.getElementById('previewDiscountLabel');
+  const previewDiscountAmount = document.getElementById('previewDiscountAmount');
+  const previewIvaLabel = document.getElementById('previewIvaLabel');
+  const previewIvaAmount = document.getElementById('previewIvaAmount');
+  const previewGrandTotal = document.getElementById('previewGrandTotal');
+  const historyList = document.getElementById('historyList');
+
+  const basicFields = ['bizName','bizPhone','bizEmail','bizAddress','clientName','clientCompany','clientPhone','clientEmail','quoteNumber','quoteDate','expiryDate','documentType','documentStatus','currency','discountType','globalDiscount','brandColor','notes','ivaRate','industrySelect'];
+
+  function getCurrencyConfig() {
+    const currency = document.getElementById('currency')?.value || 'MXN';
+    const map = {
+      MXN: { locale: 'es-MX', currency: 'MXN' },
+      USD: { locale: 'en-US', currency: 'USD' },
+      COP: { locale: 'es-CO', currency: 'COP' },
+      ARS: { locale: 'es-AR', currency: 'ARS' }
+    };
+    return map[currency] || map.MXN;
+  }
+
+  function formatMoney(value) {
+    const cfg = getCurrencyConfig();
+    return new Intl.NumberFormat(cfg.locale, { style: 'currency', currency: cfg.currency, maximumFractionDigits: 2 }).format(Number(value) || 0);
+  }
+
+  function formatDisplayDate(value) {
+    if (!value) return 'Sin fecha';
+    const date = new Date(value + 'T00:00:00');
+    return date.toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' });
+  }
+
+  function hexToRgb(hex) {
+    const clean = hex.replace('#', '');
+    const bigint = parseInt(clean, 16);
+    return [
+      (bigint >> 16) & 255,
+      (bigint >> 8) & 255,
+      bigint & 255
+    ];
+  }
+
+  function darkenHex(hex, factor = 0.75) {
+    const [r, g, b] = hexToRgb(hex);
+    const toHex = (v) => Math.max(0, Math.floor(v * factor)).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  function applyBrandColor() {
+    const color = document.getElementById('brandColor')?.value;
+    if (!color) return;
+    document.body.style.setProperty('--primary', color);
+    document.body.style.setProperty('--primary-dark', darkenHex(color, 0.72));
+  }
+
+  function setDefaultQuoteMeta() {
+    const quoteDate = document.getElementById('quoteDate');
+    const expiryDate = document.getElementById('expiryDate');
+    const quoteNumber = document.getElementById('quoteNumber');
+    const today = new Date();
+    const expiry = new Date();
+    expiry.setDate(today.getDate() + 7);
+
+    if (!quoteDate.value) quoteDate.value = today.toISOString().split('T')[0];
+    if (!expiryDate.value) expiryDate.value = expiry.toISOString().split('T')[0];
+    if (!quoteNumber.value) quoteNumber.value = `COT-${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(Math.floor(Math.random()*900)+100)}`;
+  }
+
+  function showAlert(message, type = 'error') {
+    if (!message) {
+      alertBox.style.display = 'none';
+      alertBox.textContent = '';
+      alertBox.className = 'alert error';
+      return;
+    }
+    alertBox.textContent = message;
+    alertBox.className = `alert ${type}`;
+    alertBox.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+  }
+
+  function previewLogo(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      logoDataUrl = ev.target.result;
+      logoMime = file.type === 'image/png' ? 'PNG' : (file.type === 'image/jpeg' || file.type === 'image/jpg' ? 'JPEG' : null);
+
+      const img = document.getElementById('logoPreview');
+      img.src = logoDataUrl;
+      img.style.display = 'block';
+
+      previewLogoImg.src = logoDataUrl;
+      previewLogoImg.style.display = 'block';
+      saveDraft();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function getServiceRows() {
+    return [...document.querySelectorAll('.service-row')];
+  }
+
+  function getServicesData() {
+    return getServiceRows().map(row => {
+      const id = row.id.replace('row_','');
+      const desc = document.getElementById(`desc_${id}`)?.value?.trim() || '';
+      const qty = parseFloat(document.getElementById(`qty_${id}`)?.value) || 0;
+      const price = parseFloat(document.getElementById(`price_${id}`)?.value) || 0;
+      const discount = parseFloat(document.getElementById(`discount_${id}`)?.value) || 0;
+      const base = qty * price;
+      const total = base - (base * discount / 100);
+      return { id, desc, qty, price, discount, total };
+    });
+  }
+
+  function addService(data = {}) {
+    const id = serviceCount++;
+    const row = document.createElement('div');
+    row.className = 'service-row added';
+    row.id = `row_${id}`;
+    row.innerHTML = `
+      <input type="text" placeholder="Descripción del servicio" id="desc_${id}" value="${data.desc || ''}" oninput="handleItemChange()"/>
+      <input type="number" placeholder="1" min="1" value="${data.qty ?? 1}" id="qty_${id}" oninput="calcRow(${id}); handleItemChange()"/>
+      <input type="number" placeholder="0.00" min="0" step="0.01" value="${data.price ?? ''}" id="price_${id}" oninput="calcRow(${id}); handleItemChange()"/>
+      <input type="number" placeholder="0" min="0" max="100" step="1" value="${data.discount ?? 0}" id="discount_${id}" oninput="calcRow(${id}); handleItemChange()"/>
+      <input type="text" class="total-field" id="rowTotal_${id}" readonly value="${formatMoney(0)}"/>
+      <button class="btn-del" onclick="removeService(${id})">✕</button>
+    `;
+    document.getElementById('servicesContainer').appendChild(row);
+    setTimeout(() => row.classList.remove('added'), 260);
+    calcRow(id);
+  }
+
+  function removeService(id) {
+    document.getElementById(`row_${id}`)?.remove();
+    calcTotals();
+    saveDraft();
+  }
+
+  function calcRow(id) {
+    const qty = parseFloat(document.getElementById(`qty_${id}`)?.value) || 0;
+    const price = parseFloat(document.getElementById(`price_${id}`)?.value) || 0;
+    const discount = parseFloat(document.getElementById(`discount_${id}`)?.value) || 0;
+    const base = qty * price;
+    const total = base - (base * discount / 100);
+    const el = document.getElementById(`rowTotal_${id}`);
+    if (el) el.value = formatMoney(total);
+    calcTotals();
+  }
+
+  function handleItemChange() {
+    calcTotals();
+    saveDraft();
+  }
+
+  function calcTotals() {
+    let sub = 0;
+    getServiceRows().forEach(row => {
+      const id = row.id.replace('row_','');
+      const qty = parseFloat(document.getElementById(`qty_${id}`)?.value) || 0;
+      const price = parseFloat(document.getElementById(`price_${id}`)?.value) || 0;
+      const discount = parseFloat(document.getElementById(`discount_${id}`)?.value) || 0;
+      const base = qty * price;
+      sub += base - (base * discount / 100);
+    });
+
+    const discountType = document.getElementById('discountType').value;
+    const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+    const discountValue = discountType === 'percent' ? (sub * globalDiscount / 100) : Math.min(globalDiscount, sub);
+    const discountedSubtotal = Math.max(sub - discountValue, 0);
+    const ivaRate = parseFloat(document.getElementById('ivaRate').value) || 0;
+    const iva = discountedSubtotal * ivaRate / 100;
+    const grand = discountedSubtotal + iva;
+
+    document.getElementById('subtotal').textContent = formatMoney(sub);
+    document.getElementById('discountLabel').textContent = discountType === 'percent' ? `Descuento (${globalDiscount || 0}%)` : 'Descuento';
+    document.getElementById('discountAmount').textContent = formatMoney(discountValue);
+    document.getElementById('ivaAmount').textContent = formatMoney(iva);
+    document.getElementById('grandTotal').textContent = formatMoney(grand);
+
+    updatePreview(sub, discountValue, iva, grand);
+  }
+
+  function updatePreview(sub, discountValue, iva, grand) {
+    const bizName = document.getElementById('bizName').value.trim() || 'Tu negocio';
+    const bizPhone = document.getElementById('bizPhone').value.trim() || 'WhatsApp o teléfono';
+    const clientName = document.getElementById('clientName').value.trim() || 'Cliente';
+    const clientCompany = document.getElementById('clientCompany').value.trim();
+    const clientPhone = document.getElementById('clientPhone').value.trim();
+    const quoteNumber = document.getElementById('quoteNumber').value.trim() || 'Folio demo';
+    const quoteDate = document.getElementById('quoteDate').value;
+    const expiryDate = document.getElementById('expiryDate').value;
+    const ivaRate = parseFloat(document.getElementById('ivaRate').value) || 0;
+    const discountType = document.getElementById('discountType').value;
+    const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+    const documentType = document.getElementById('documentType').value;
+    const documentStatus = document.getElementById('documentStatus').value;
+
+    previewBizName.textContent = `${documentType === 'factura' ? 'Factura' : 'Cotización'} · ${bizName}`;
+    previewStatus.textContent = documentStatus;
+    previewBizContact.textContent = bizPhone;
+    previewClientName.textContent = clientName;
+    previewClientMeta.textContent = [clientCompany, clientPhone].filter(Boolean).join(' · ') || 'Empresa y contacto';
+    previewFolio.textContent = quoteNumber;
+    previewDate.textContent = `Emisión: ${formatDisplayDate(quoteDate)}`;
+    previewExpiry.textContent = `Válida hasta: ${formatDisplayDate(expiryDate)}`;
+    previewSubtotal.textContent = formatMoney(sub);
+    previewDiscountLabel.textContent = discountType === 'percent' ? `Descuento (${globalDiscount || 0}%)` : 'Descuento';
+    previewDiscountAmount.textContent = formatMoney(discountValue);
+    previewIvaLabel.textContent = `IVA (${ivaRate}%)`;
+    previewIvaAmount.textContent = formatMoney(iva);
+    previewGrandTotal.textContent = formatMoney(grand);
+
+    if (logoDataUrl) {
+      previewLogoImg.src = logoDataUrl;
+      previewLogoImg.style.display = 'block';
+    }
+
+    const services = getServicesData().filter(item => item.desc || item.price > 0);
+    if (!services.length) {
+      previewItems.innerHTML = '<div class="preview-empty">Agrega servicios para ver la cotización previa.</div>';
+      return;
+    }
+
+    const header = `
+      <div class="preview-item header">
+        <span>Descripción</span>
+        <span>Cant.</span>
+        <span>P. Unit.</span>
+        <span>Total</span>
+      </div>
+    `;
+
+    const rows = services.map(item => `
+      <div class="preview-item">
+        <span>${item.desc || 'Servicio sin nombre'}${item.discount ? ` · desc ${item.discount}%` : ''}</span>
+        <span>${item.qty}</span>
+        <span>${formatMoney(item.price)}</span>
+        <span>${formatMoney(item.total)}</span>
+      </div>
+    `).join('');
+
+    previewItems.innerHTML = header + rows;
+  }
+
+  function validateForm(showErrors = true) {
+    clearErrors();
+    const errors = [];
+
+    const bizName = document.getElementById('bizName');
+    const clientName = document.getElementById('clientName');
+    const services = getServicesData();
+    const validServices = services.filter(item => item.desc && item.price > 0 && item.qty > 0);
+
+    if (!bizName.value.trim()) {
+      errors.push('Escribe el nombre del negocio.');
+      if (showErrors) bizName.classList.add('input-error');
+    }
+
+    if (!clientName.value.trim()) {
+      errors.push('Escribe el nombre del cliente.');
+      if (showErrors) clientName.classList.add('input-error');
+    }
+
+    if (!validServices.length) {
+      errors.push('Agrega al menos un servicio con descripción, cantidad y precio.');
+      if (showErrors) {
+        getServiceRows().forEach(row => row.querySelectorAll('input').forEach(input => input.classList.add('input-error')));
+      }
+    }
+
+    if (showErrors) {
+      if (errors.length) showAlert(errors.join(' '), 'error');
+      else showAlert('Todo listo, puedes generar la cotización.', 'success');
+    }
+
+    return { ok: errors.length === 0, validServices };
+  }
+
+  function saveDraft() {
+    const draft = {
+      fields: Object.fromEntries(basicFields.map(id => [id, document.getElementById(id)?.value || ''])),
+      logoDataUrl,
+      logoMime,
+      isDark: document.body.classList.contains('dark'),
+      services: getServicesData(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+  }
+
+  function loadDraft() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+
+    try {
+      const draft = JSON.parse(raw);
+      basicFields.forEach(id => {
+        if (document.getElementById(id) && draft.fields && draft.fields[id] !== undefined) {
+          document.getElementById(id).value = draft.fields[id];
+        }
+      });
+
+      if (draft.logoDataUrl) {
+        logoDataUrl = draft.logoDataUrl;
+        logoMime = draft.logoMime || null;
+        const img = document.getElementById('logoPreview');
+        img.src = logoDataUrl;
+        img.style.display = 'block';
+        previewLogoImg.src = logoDataUrl;
+        previewLogoImg.style.display = 'block';
+      }
+
+      setIndustryTheme(document.getElementById('industrySelect').value || 'electrico', false, false);
+      if (draft.isDark) document.body.classList.add('dark');
+      updateThemeToggleLabel();
+
+      document.getElementById('servicesContainer').innerHTML = '';
+      serviceCount = 0;
+      const services = Array.isArray(draft.services) ? draft.services : [];
+      if (services.length) services.forEach(item => addService(item));
+      else { addService(); addService(); }
+
+      setDefaultQuoteMeta();
+      calcTotals();
+      showAlert('Borrador restaurado automáticamente.', 'success');
+      return true;
+    } catch (error) {
+      console.error('No se pudo cargar el borrador', error);
+      return false;
+    }
+  }
+
+  function openWhatsAppQuote() {
+    const validation = validateForm(true);
+    if (!validation.ok) return;
+
+    const rawPhone = document.getElementById('clientPhone').value.trim();
+    if (!rawPhone) {
+      document.getElementById('clientPhone').classList.add('input-error');
+      showAlert('Escribe el teléfono del cliente para abrir WhatsApp.', 'error');
+      return;
+    }
+
+    const phone = rawPhone.replace(/\D/g, '');
+    if (!phone) {
+      document.getElementById('clientPhone').classList.add('input-error');
+      showAlert('El teléfono del cliente no parece válido para WhatsApp.', 'error');
+      return;
+    }
+
+    const bizName = document.getElementById('bizName').value.trim() || 'Tu negocio';
+    const clientName = document.getElementById('clientName').value.trim() || 'cliente';
+    const ivaRate = parseFloat(document.getElementById('ivaRate').value) || 0;
+    const discountType = document.getElementById('discountType').value;
+    const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+    const subtotal = validation.validServices.reduce((sum, item) => sum + item.total, 0);
+    const discountValue = discountType === 'percent' ? (subtotal * globalDiscount / 100) : Math.min(globalDiscount, subtotal);
+    const taxableBase = Math.max(subtotal - discountValue, 0);
+    const iva = taxableBase * ivaRate / 100;
+    const total = taxableBase + iva;
+
+    const itemsText = validation.validServices.slice(0, 5).map(item => `- ${item.desc}: ${formatMoney(item.total)}`).join('\n');
+    const message = [
+      `Hola ${clientName}, te comparto tu cotización de ${bizName}.`,
+      '',
+      'Resumen:',
+      itemsText,
+      '',
+      `Subtotal: ${formatMoney(subtotal)}`,
+      `Descuento: ${formatMoney(discountValue)}`,
+      `IVA (${ivaRate}%): ${formatMoney(iva)}`,
+      `Total: ${formatMoney(total)}`,
+      '',
+      'Si deseas, también te envío el PDF.'
+    ].join('\n');
+
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+    showAlert('WhatsApp abierto con el mensaje listo para enviar.', 'success');
+    saveDraft();
+  }
+
+  function updateThemeToggleLabel() {
+    document.getElementById('themeToggle').textContent = document.body.classList.contains('dark') ? '☀️ Modo claro' : '🌙 Modo oscuro';
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    updateThemeToggleLabel();
+    saveDraft();
+  }
+
+  function setIndustryTheme(industry, persist = true, syncColor = true) {
+    document.body.dataset.industry = industry;
+    const palette = {
+      electrico: '#1a56db',
+      plomeria: '#ea6a12',
+      construccion: '#d69e2e'
+    };
+    const brandColor = document.getElementById('brandColor');
+    if (syncColor && brandColor && palette[industry]) brandColor.value = palette[industry];
+    applyBrandColor();
+    if (persist) saveDraft();
+  }
+
+  function applyDemoPreset() {
+    const industry = document.getElementById('industrySelect').value;
+    const isPlumbing = industry === 'plomeria';
+    const isConstruction = industry === 'construccion';
+
+    document.getElementById('bizName').value = isPlumbing ? 'Plomería Express Pro' : isConstruction ? 'ConstruMax Obras' : 'ElectroFix 24/7';
+    document.getElementById('bizPhone').value = isPlumbing ? '+52 55 4433 2211' : isConstruction ? '+52 81 2200 4411' : '+52 55 7788 9900';
+    document.getElementById('bizEmail').value = isPlumbing ? 'contacto@plomeriaexpress.com' : isConstruction ? 'ventas@construmax.com' : 'soporte@electrofix.com';
+    document.getElementById('bizAddress').value = isPlumbing ? 'CDMX, México' : isConstruction ? 'Guadalajara, México' : 'Monterrey, México';
+    document.getElementById('clientName').value = 'Carlos Mendoza';
+    document.getElementById('clientCompany').value = isPlumbing ? 'Residencial Los Álamos' : isConstruction ? 'Proyecto Casa Norte' : 'Oficinas Punto Norte';
+    document.getElementById('clientPhone').value = '+52 55 6677 8899';
+    document.getElementById('clientEmail').value = 'cliente@email.com';
+    document.getElementById('quoteNumber').value = isPlumbing ? 'COT-PLOM-001' : isConstruction ? 'COT-CONS-001' : 'COT-ELEC-001';
+    document.getElementById('documentType').value = 'cotizacion';
+    document.getElementById('documentStatus').value = 'borrador';
+    document.getElementById('currency').value = 'MXN';
+    document.getElementById('discountType').value = 'percent';
+    document.getElementById('globalDiscount').value = isConstruction ? 5 : 0;
+    document.getElementById('quoteDate').value = new Date().toISOString().split('T')[0];
+    const expiry = new Date(); expiry.setDate(expiry.getDate() + 7);
+    document.getElementById('expiryDate').value = expiry.toISOString().split('T')[0];
+    document.getElementById('notes').value = isPlumbing ? 'Incluye garantía de 30 días por mano de obra. Tiempo estimado: 1 día.' : isConstruction ? 'Precios sujetos a visita final de obra. Incluye mano de obra y coordinación básica.' : 'Incluye revisión general y garantía de instalación por 30 días.';
+    document.getElementById('brandColor').value = isPlumbing ? '#ea6a12' : isConstruction ? '#d69e2e' : '#1a56db';
+    applyBrandColor();
+    document.getElementById('ivaRate').value = 16;
+
+    document.getElementById('servicesContainer').innerHTML = '';
+    serviceCount = 0;
+
+    if (isPlumbing) {
+      addService({ desc: 'Detección y reparación de fuga', qty: 1, price: 850, discount: 0 });
+      addService({ desc: 'Cambio de llave mezcladora', qty: 1, price: 1200, discount: 5 });
+      addService({ desc: 'Materiales y sellado', qty: 1, price: 380, discount: 0 });
+    } else if (isConstruction) {
+      addService({ desc: 'Levantamiento y planificación inicial', qty: 1, price: 2400, discount: 0 });
+      addService({ desc: 'Materiales base de obra', qty: 1, price: 5200, discount: 4 });
+      addService({ desc: 'Mano de obra especializada', qty: 1, price: 3800, discount: 0 });
+    } else {
+      addService({ desc: 'Diagnóstico eléctrico completo', qty: 1, price: 700, discount: 0 });
+      addService({ desc: 'Cambio de breaker principal', qty: 1, price: 1350, discount: 5 });
+      addService({ desc: 'Cableado y materiales', qty: 1, price: 520, discount: 0 });
+    }
+
+    calcTotals();
+    showAlert('Demo comercial cargada. Ya puedes enseñarla a un cliente.', 'success');
+    saveDraft();
+  }
+
+  function getHistory() {
+    try {
+      return JSON.parse(localStorage.getItem('cotizap_history_v1') || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function saveHistoryEntry() {
+    const entry = {
+      quoteNumber: document.getElementById('quoteNumber').value,
+      clientName: document.getElementById('clientName').value,
+      documentType: document.getElementById('documentType').value,
+      currency: document.getElementById('currency').value,
+      total: document.getElementById('grandTotal').textContent,
+      createdAt: new Date().toISOString(),
+      draft: {
+        fields: Object.fromEntries(basicFields.map(id => [id, document.getElementById(id)?.value || ''])),
+        logoDataUrl,
+        logoMime,
+        isDark: document.body.classList.contains('dark'),
+        services: getServicesData(),
+      }
+    };
+
+    const history = getHistory();
+    history.unshift(entry);
+    localStorage.setItem('cotizap_history_v1', JSON.stringify(history.slice(0, 8)));
+    renderHistory();
+  }
+
+  function loadHistory(index) {
+    const history = getHistory();
+    const item = history[index];
+    if (!item) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(item.draft));
+    location.reload();
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    if (!history.length) {
+      historyList.innerHTML = '<div class="history-empty">Aún no hay cotizaciones guardadas en historial.</div>';
+      return;
+    }
+
+    historyList.innerHTML = history.map((item, index) => `
+      <div class="history-item">
+        <div>
+          <strong>${item.quoteNumber || 'Sin folio'} · ${item.documentType === 'factura' ? 'Factura' : 'Cotización'}</strong>
+          <span>${item.clientName || 'Sin cliente'} · ${item.total || ''} · ${new Date(item.createdAt).toLocaleDateString('es-MX')}</span>
+        </div>
+        <button class="btn-small" onclick="loadHistory(${index})">Cargar</button>
+      </div>
+    `).join('');
+  }
+
+  function convertToInvoice() {
+    document.getElementById('documentType').value = 'factura';
+    document.getElementById('documentStatus').value = 'facturada';
+    calcTotals();
+    saveDraft();
+    showAlert('Documento convertido a Factura. Puedes generar el PDF ahora.', 'success');
+  }
+
+  function printCurrentQuote() {
+    window.print();
+  }
+
+  async function createQrDataUrl(text) {
+    const temp = document.getElementById('qrTemp');
+    temp.innerHTML = '';
+    new QRCode(temp, {
+      text,
+      width: 96,
+      height: 96,
+      colorDark: '#111827',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 120));
+    const canvas = temp.querySelector('canvas');
+    const img = temp.querySelector('img');
+    if (canvas) return canvas.toDataURL('image/png');
+    if (img) return img.src;
+    return null;
+  }
+
+  async function generatePDF() {
+    const validation = validateForm(true);
+    if (!validation.ok) return;
+
+    setDefaultQuoteMeta();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const industry = document.getElementById('industrySelect').value;
+    const brandColor = document.getElementById('brandColor').value || (industry === 'plomeria' ? '#ea6a12' : industry === 'construccion' ? '#d69e2e' : '#1a56db');
+    const blue = hexToRgb(brandColor);
+    const dark = [26, 32, 44];
+    const gray = [113, 128, 150];
+    const light = [247, 250, 252];
+
+    const bizName = document.getElementById('bizName').value || 'Mi Negocio';
+    const phone = document.getElementById('bizPhone').value;
+    const email = document.getElementById('bizEmail').value;
+    const addr  = document.getElementById('bizAddress').value;
+    const cName = document.getElementById('clientName').value || '—';
+    const cComp = document.getElementById('clientCompany').value;
+    const cPhone= document.getElementById('clientPhone').value;
+    const cEmail= document.getElementById('clientEmail').value;
+    const quoteNumber = document.getElementById('quoteNumber').value.trim();
+    const quoteDate = document.getElementById('quoteDate').value;
+    const expiryDate = document.getElementById('expiryDate').value;
+    const documentType = document.getElementById('documentType').value;
+    const documentStatus = document.getElementById('documentStatus').value;
+    const discountType = document.getElementById('discountType').value;
+    const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+    const ivaRate = parseFloat(document.getElementById('ivaRate').value) || 0;
+    const notes = document.getElementById('notes').value;
+
+    const sub = validation.validServices.reduce((sum, item) => sum + item.total, 0);
+    const discountValue = discountType === 'percent' ? (sub * globalDiscount / 100) : Math.min(globalDiscount, sub);
+    const taxableBase = Math.max(sub - discountValue, 0);
+    const iva = taxableBase * ivaRate / 100;
+    const grand = taxableBase + iva;
+
+    const qrText = [bizName, phone, email, addr].filter(Boolean).join(' | ');
+    const qrDataUrl = qrText ? await createQrDataUrl(qrText) : null;
+
+    doc.setFillColor(...blue);
+    doc.rect(0, 0, 210, 18, 'F');
+    doc.setDrawColor(...blue);
+    doc.setLineWidth(1.2);
+    doc.line(35, 34, 175, 34);
+
+    if (logoDataUrl && logoMime) {
+      try { doc.addImage(logoDataUrl, logoMime, 92, 20, 26, 26); } catch(e) { console.warn('No se pudo cargar el logo en PDF', e); }
+    }
+
+    doc.setTextColor(...dark);
+    doc.setFontSize(22); doc.setFont(undefined,'bold');
+    doc.text(documentType === 'factura' ? 'FACTURA' : 'COTIZACIÓN', 105, 58, { align:'center' });
+    doc.setFontSize(10); doc.setFont(undefined,'normal');
+    doc.setTextColor(...gray);
+    doc.text(`${bizName} · Estado: ${documentStatus}`, 105, 65, { align:'center' });
+
+    doc.setFillColor(255,255,255);
+    doc.roundedRect(14, 74, 86, 34, 4, 4, 'FD');
+    doc.setFillColor(255,255,255);
+    doc.roundedRect(110, 74, 86, 34, 4, 4, 'FD');
+
+    doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(...blue);
+    doc.text('DATOS DEL NEGOCIO', 18, 82);
+    doc.text('CLIENTE', 114, 82);
+
+    doc.setFont(undefined,'normal'); doc.setTextColor(...dark);
+    let leftY = 89;
+    [phone && `Tel: ${phone}`, email && `Email: ${email}`, addr && `Dir: ${addr}`].filter(Boolean).forEach(line => {
+      doc.text(line, 18, leftY); leftY += 6;
+    });
+
+    let rightY = 89;
+    [cName, cComp, cPhone && `Tel: ${cPhone}`, cEmail && `Email: ${cEmail}`].filter(Boolean).forEach(line => {
+      doc.text(line, 114, rightY); rightY += 6;
+    });
+
+    doc.setFillColor(...light);
+    doc.roundedRect(14, 114, 182, 16, 4, 4, 'F');
+    doc.setTextColor(...dark); doc.setFont(undefined,'bold'); doc.setFontSize(10);
+    doc.text(`No. ${quoteNumber}`, 18, 124);
+    doc.text(`Emisión: ${formatDisplayDate(quoteDate)}`, 88, 124);
+    doc.text(`Vence: ${formatDisplayDate(expiryDate)}`, 156, 124, { align:'center' });
+
+    doc.setDrawColor(...blue);
+    doc.setLineWidth(0.6);
+    doc.line(14, 138, 196, 138);
+
+    let y = 146;
+    doc.setFillColor(...blue);
+    doc.rect(14, y, 182, 9, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(9); doc.setFont(undefined,'bold');
+    doc.text('DESCRIPCIÓN', 18, y+6);
+    doc.text('CANT.', 120, y+6, {align:'right'});
+    doc.text('PRECIO UNIT.', 155, y+6, {align:'right'});
+    doc.text('TOTAL', 194, y+6, {align:'right'});
+    y += 12;
+
+    validation.validServices.forEach((item, index) => {
+      if (index % 2 === 0) {
+        doc.setFillColor(...light);
+        doc.roundedRect(14, y - 4, 182, 8, 2, 2, 'F');
+      }
+      doc.setTextColor(...dark);
+      doc.setFontSize(9); doc.setFont(undefined,'normal');
+      doc.text(item.desc.substring(0, 45), 18, y+1);
+      doc.text(item.qty.toString(), 120, y+1, {align:'right'});
+      doc.text(formatMoney(item.price), 155, y+1, {align:'right'});
+      doc.text(formatMoney(item.total), 194, y+1, {align:'right'});
+      y += 9;
+    });
+
+    y += 4;
+    const drawTotalRow = (label, val, bold=false, highlight=false) => {
+      if (highlight) {
+        doc.setFillColor(...blue);
+        doc.roundedRect(122, y-5, 74, 10, 3, 3, 'F');
+        doc.setTextColor(255,255,255);
+      } else {
+        doc.setTextColor(...dark);
+      }
+      doc.setFontSize(bold ? 10 : 9);
+      doc.setFont(undefined, bold ? 'bold' : 'normal');
+      doc.text(label, 154, y+1, {align:'right'});
+      doc.text(formatMoney(val), 194, y+1, {align:'right'});
+      y += 9;
+    };
+
+    drawTotalRow('Subtotal:', sub);
+    drawTotalRow(discountType === 'percent' ? `Descuento (${globalDiscount || 0}%):` : 'Descuento:', discountValue);
+    drawTotalRow(`IVA (${ivaRate}%):`, iva);
+    drawTotalRow('TOTAL:', grand, true, true);
+
+    doc.setDrawColor(...blue);
+    doc.roundedRect(14, 230, 66, 16, 4, 4);
+    doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.setTextColor(...blue);
+    doc.text(documentType === 'factura' ? 'FACTURA EMITIDA' : 'COTIZACIÓN VÁLIDA', 47, 237, { align:'center' });
+    doc.setFont(undefined,'normal'); doc.setTextColor(...dark);
+    doc.text(documentType === 'factura' ? formatDisplayDate(quoteDate) : `Hasta ${formatDisplayDate(expiryDate)}`, 47, 243, { align:'center' });
+
+    doc.setDrawColor(180, 190, 205);
+    doc.line(120, 242, 190, 242);
+    doc.setFontSize(8); doc.setTextColor(...gray);
+    doc.text('Firma autorizada', 155, 248, { align:'center' });
+
+    if (notes) {
+      doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(...dark);
+      doc.text('TÉRMINOS Y CONDICIONES', 14, 252);
+      doc.setFont(undefined,'normal'); doc.setTextColor(...gray);
+      const lines = doc.splitTextToSize(notes, 118);
+      doc.text(lines, 14, 258);
+    }
+
+    doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(...dark);
+    doc.text('Contacto del negocio', 160, 252, { align:'center' });
+    if (qrDataUrl) {
+      try { doc.addImage(qrDataUrl, 'PNG', 146, 255, 28, 28); } catch (e) { console.warn('No se pudo insertar el QR', e); }
+    }
+    doc.setFont(undefined,'normal'); doc.setTextColor(...gray);
+    doc.text('Escanea para ver datos', 160, 286, { align:'center' });
+
+    doc.setFillColor(...light);
+    doc.rect(0, 282, 210, 15, 'F');
+    doc.setTextColor(...gray);
+    doc.setFontSize(8);
+    doc.text('Generado con CotiZap · cotización lista para enviar', 105, 291, {align:'center'});
+
+    doc.save(`${documentType === 'factura' ? 'Factura' : 'Cotizacion'}_${quoteNumber}.pdf`);
+    saveHistoryEntry();
+    showAlert('PDF premium generado correctamente y guardado en historial.', 'success');
+    saveDraft();
+  }
+
+  basicFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      calcTotals();
+      saveDraft();
+    });
+    el.addEventListener('change', () => {
+      calcTotals();
+      saveDraft();
+    });
+  });
+
+  document.getElementById('brandColor').addEventListener('input', () => {
+    applyBrandColor();
+    calcTotals();
+    saveDraft();
+  });
+
+  setDefaultQuoteMeta();
+  setIndustryTheme(document.getElementById('industrySelect').value || 'electrico', false);
+  updateThemeToggleLabel();
+  renderHistory();
+
+  if (!loadDraft()) {
+    addService();
+    addService();
+    calcTotals();
+  }
+</script>
+</body>
+</html>

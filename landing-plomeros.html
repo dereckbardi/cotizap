@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>CotiZap para Plomeros | Cotizaciones profesionales por WhatsApp y PDF</title>
+  <meta name="description" content="Generador de cotizaciones para plomeros. Crea cotizaciones profesionales en PDF y envíalas por WhatsApp en minutos." />
+  <style>
+    :root {
+      --bg: #fff8f2;
+      --text: #1b2430;
+      --muted: #607086;
+      --primary: #ea6a12;
+      --primary-dark: #c05621;
+      --line: #ead7c8;
+      --panel: #ffffff;
+      --soft: #fff2e8;
+      --shadow: 0 16px 40px rgba(192, 86, 33, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(180deg, #fff8f2, #fffdfb);
+      color: var(--text);
+    }
+    .container { width: min(1100px, calc(100% - 32px)); margin: 0 auto; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 28px;
+      align-items: center;
+      padding: 44px 0 52px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--primary-dark);
+      font-size: .86rem;
+      font-weight: 800;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      line-height: .96;
+      margin: 16px 0 18px;
+    }
+    p.lead {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 1.05rem;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 14px 18px; border-radius: 14px; font-weight: 800;
+      text-decoration: none; transition: transform .18s ease, opacity .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); opacity: .96; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+    .btn-secondary { background: white; color: var(--text); border: 1px solid var(--line); }
+    .mockup {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .mockup-card {
+      border: 1px solid #f0dfd2;
+      background: #fffaf6;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .mockup-row {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid #f2e5db;
+      color: #5d6b7d;
+    }
+    .mockup-row:last-child { border-bottom: none; }
+    .section { padding: 24px 0 32px; }
+    .section h2 { margin: 0 0 10px; font-size: 1.9rem; }
+    .section p { color: var(--muted); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    }
+    .card h3 { margin: 0 0 8px; }
+    .card p { margin: 0; line-height: 1.6; color: var(--muted); }
+    .pricing {
+      background: linear-gradient(135deg, #fff3eb, #fffaf6);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+    }
+    .price { font-size: 2.2rem; font-weight: 900; color: var(--primary-dark); margin: 10px 0; }
+    ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.8; }
+    .cta {
+      margin: 30px 0 50px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 26px;
+      display: flex; justify-content: space-between; gap: 18px; align-items: center;
+      box-shadow: var(--shadow);
+    }
+    footer { padding-bottom: 34px; color: #8a99ad; }
+    @media (max-width: 920px) {
+      .hero, .grid-3, .cta { grid-template-columns: 1fr; display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div>
+        <div class="badge">🔧 Hecho para plomeros y servicios a domicilio</div>
+        <h1>Haz cotizaciones profesionales para plomería en minutos.</h1>
+        <p class="lead">CotiZap para Plomeros te permite crear cotizaciones bonitas, descargarlas en PDF, enviarlas por WhatsApp y convertirlas en factura sin perder tiempo en Word o Excel.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="./index.html">Ver demo</a>
+          <a class="btn btn-secondary" href="#precio">Ver precio</a>
+        </div>
+      </div>
+
+      <div class="mockup">
+        <div class="mockup-card">
+          <strong style="display:block; margin-bottom:8px;">Plomería Express Pro</strong>
+          <div class="mockup-row"><span>Detección y reparación de fuga</span><strong>$850</strong></div>
+          <div class="mockup-row"><span>Cambio de llave mezcladora</span><strong>$1,200</strong></div>
+          <div class="mockup-row"><span>Materiales y sellado</span><strong>$380</strong></div>
+        </div>
+        <div class="mockup-card">
+          <div class="mockup-row"><span>Subtotal</span><strong>$2,430</strong></div>
+          <div class="mockup-row"><span>IVA</span><strong>$388.80</strong></div>
+          <div class="mockup-row"><span>Total</span><strong>$2,818.80</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>¿Qué problema resuelve?</h2>
+      <p>Muchos plomeros cotizan copiando mensajes en WhatsApp o escribiendo a mano. Eso hace perder tiempo y te hace ver menos profesional. CotiZap te ayuda a responder más rápido y cerrar mejor.</p>
+    </section>
+
+    <section class="section">
+      <h2>Lo que incluye</h2>
+      <div class="grid-3">
+        <div class="card"><h3>PDF profesional</h3><p>Logo, QR, firma, vencimiento, términos y diseño premium.</p></div>
+        <div class="card"><h3>WhatsApp listo</h3><p>Abre el mensaje con el resumen de la cotización para enviarlo rápido.</p></div>
+        <div class="card"><h3>Factura con un clic</h3><p>Convierte la cotización en factura cuando el cliente aprueba.</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Ideal para</h2>
+      <div class="grid-3">
+        <div class="card"><h3>Plomeros independientes</h3><p>Para trabajar más rápido y verte más serio con cada cliente.</p></div>
+        <div class="card"><h3>Negocios pequeños</h3><p>Si ya haces trabajos de mantenimiento o instalaciones a domicilio.</p></div>
+        <div class="card"><h3>Técnicos que venden por WhatsApp</h3><p>Especialmente si hoy cotizas copiando textos manualmente.</p></div>
+      </div>
+    </section>
+
+    <section class="section pricing" id="precio">
+      <h2>Precio de lanzamiento</h2>
+      <div class="price">$19 USD</div>
+      <ul>
+        <li>Versión enfocada a plomería</li>
+        <li>PDF premium</li>
+        <li>Envío por WhatsApp</li>
+        <li>Historial</li>
+        <li>Factura con un clic</li>
+      </ul>
+    </section>
+
+    <section class="cta">
+      <div>
+        <h2 style="margin:0 0 8px;">Empieza a cotizar como profesional</h2>
+        <p style="margin:0; color:var(--muted);">Prueba la demo y deja de mandar cotizaciones improvisadas.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href="./index.html">Abrir demo</a>
+      </div>
+    </section>
+
+    <footer>
+      CotiZap para Plomeros, cotizaciones profesionales para negocios de servicios en LATAM.
+    </footer>
+  </div>
+</body>
+</html>
